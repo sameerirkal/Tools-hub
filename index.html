@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collection Tools</title>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+<style>
+:root {
+  --blue: #4776e6;
+  --blue2: #315bc4;
+  --bg: #f4f6fb;
+  --white: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --green: #e8f7ef;
+  --red: #dc3545;
+  --sidebar: #111827;
+  --sidebar-hover: #1f2937;
+  --shadow: 0 8px 28px rgba(15, 23, 42, .06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(.97);
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  flex-shrink: 0;
+  padding: 22px 14px;
+  background: var(--sidebar);
+  color: #fff;
+  position: relative;
+  z-index: 20;
+  transition: width .25s ease, transform .25s ease;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, .08);
+}
+
+.sidebar.collapsed {
+  width: 78px;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 38px;
+}
+
+.logo {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+
+.logo span {
+  color: #79a5ff;
+}
+
+.menu-btn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-size: 21px;
+}
+
+.menu-btn:hover {
+  background: rgba(255,255,255,.15);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #aab5c7;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-item:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, #4776e6, #315bc4);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 5px 16px rgba(71,118,230,.25);
+}
+
+.nav-icon {
+  width: 24px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 19px;
+}
+
+.nav-label {
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .logo,
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-top {
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 13px 8px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+header, .head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -.5px;
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.card {
+  padding: 23px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .09);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  color: #526176;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d9e1ec;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(71,118,230,.12);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.actions button,
+#exportBtn {
+  min-height: 42px;
+  padding: 10px 17px;
+  border: 0;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.primary {
+  background: linear-gradient(135deg, #4776e6, #315bc4);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(71,118,230,.2);
+}
+
+.secondary {
+  background: #edf2ff;
+  color: #315bc4;
+}
+
+.danger {
+  background: #fff0f1;
+  color: var(--red);
+}
+
+.green {
+  background: var(--green);
+  color: #187445;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.metric {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e6ebf3;
+  border-radius: 13px;
+  background: #f8faff;
+  transition: all .2s ease;
+}
+
+.metric:hover {
+  border-color: #c6d7ff;
+  background: #f0f5ff;
+  transform: translateY(-1px);
+}
+
+.metric span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.metric strong {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.offer {
+  margin-top: 15px;
+  padding: 16px;
+  border: 1px solid #dce7f7;
+  border-radius: 13px;
+  background: #f5f8ff;
+}
+
+.offer p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.section {
+  margin-top: 25px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tab {
+  padding: 11px 17px;
+  border: 0;
+  border-radius: 10px;
+  background: #eaf0fa;
+  color: #52657e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tab.active {
+  background: var(--blue);
+  color: #fff;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th, td {
+  padding: 13px 11px;
+  border: 1px solid #dce4ef;
+  text-align: center;
+  white-space: nowrap;
+}
+
+th {
+  background: #eaf0ff;
+  color: #244a9b;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+td {
+  background: #fff;
+  color: #26364d;
+}
+
+tbody tr:nth-child(even) td {
+  background: #f8faff;
+}
+
+.empty {
+  padding: 28px;
+  color: #8492a6;
+  text-align: center;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.template-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, .8fr) minmax(0, 1.2fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.template-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  text-align: left;
+}
+
+.template-item:hover {
+  border-color: #9ebef1;
+  background: #f5f9ff;
+}
+
+.template-item.selected {
+  border-color: var(--blue);
+  background: #edf4ff;
+  box-shadow: 0 0 0 2px rgba(71,118,230,.08);
+}
+
+.template-number {
+  display: grid;
+  place-items: center;
+  min-width: 29px;
+  height: 29px;
+  border-radius: 9px;
+  background: #eaf1ff;
+  color: #315bc4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.template-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.template-category {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.preview {
+  min-height: 210px;
+}
+
+.small-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.template-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.template-manage {
+  margin-top: 22px;
+}
+
+.mobile-overlay {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .layout, .template-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 701px) {
+  .sidebar.collapsed:hover {
+    width: 250px;
+  }
+
+  .sidebar.collapsed:hover .logo,
+  .sidebar.collapsed:hover .nav-label {
+    display: block;
+  }
+
+  .sidebar.collapsed:hover .sidebar-top {
+    justify-content: space-between;
+  }
+
+  .sidebar.collapsed:hover .nav-item {
+    justify-content: flex-start;
+    padding: 13px;
+  }
+}
+
+@media (max-width: 700px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 250px;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    box-shadow: 5px 0 25px rgba(23,42,69,.2);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    width: 250px;
+  }
+
+  .sidebar.collapsed .logo,
+  .sidebar.collapsed .nav-label {
+    display: block;
+  }
+
+  .sidebar.collapsed .sidebar-top {
+    justify-content: space-between;
+  }
+
+  .sidebar.collapsed .nav-item {
+    justify-content: flex-start;
+    padding: 13px;
+  }
+
+  .main {
+    padding: 17px 13px;
+  }
+
+  header {
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 19px;
+  }
+
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .full {
+    grid-column: auto;
+  }
+
+  .card {
+    padding: 17px;
+    border-radius: 15px;
+  }
+
+  .results {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .metric {
+    padding: 12px;
+  }
+
+  .metric strong {
+    font-size: 15px;
+  }
+
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(16,32,57,.45);
+  }
+
+  .mobile-overlay.show {
+    display: block;
+  }
+}
+
+@media (max-width: 380px) {
+  .results {
+    grid-template-columns: 1fr;
+  }
+
+  header > div {
+    gap: 8px !important;
+  }
+
+  h1 {
+    font-size: 17px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<div class="mobile-overlay" id="overlay" onclick="toggleMobileMenu(false)"></div>
+
+<aside class="sidebar collapsed" id="sidebar">
+  <div class="sidebar-top">
+    <div class="logo">TOOLS <span>HUB</span></div>
+    <button class="menu-btn" aria-label="Toggle menu" onclick="toggleSidebar()">☰</button>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-item active" id="navCalculator" onclick="openView('calculator')"><span class="nav-icon">▦</span><span class="nav-label">EMI Calculator</span></button>
+    <button class="nav-item" id="navRecords" onclick="openView('records')"><span class="nav-icon">▤</span><span class="nav-label">Saved Entries</span></button>
+    <button class="nav-item" id="navTemplates" onclick="openView('templates')"><span class="nav-icon">▣</span><span class="nav-label">WhatsApp Templates</span></button>
+    <button class="nav-item" onclick="futureTool()"><span class="nav-icon">＋</span><span class="nav-label">Add New Tool</span></button>
+  </nav>
+</aside>
+
+<main class="main">
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="menu-btn" aria-label="Open menu" onclick="toggleMobileMenu()">☰</button>
+    <h1 id="pageTitle">EMI Conversion & Settlement</h1>
+  </div>
+  <button class="primary" id="exportBtn" onclick="exportExcel()" disabled>Export Excel</button>
+</header>
+
+<!-- EMI CALCULATOR -->
+<section id="calculatorView" class="view active">
+  <div class="layout">
+    <div class="card">
+      <h2>Customer Details</h2>
+      <div class="fields">
+        <div class="field"><label>CM 11 *</label><input id="cm11" placeholder="CM 11"></div>
+        <div class="field"><label>Customer Name *</label><input id="customerName" placeholder="Customer Name"></div>
+        <div class="field"><label>Statement Balance (₹) *</label><input id="statementBalance" type="number" min="0.01" step="0.01"></div>
+        <div class="field"><label>Recovery Percentage (%) *</label><input id="recovery" type="number" min="0" max="100" step="0.01"></div>
+        <div class="field"><label>Minimum Monthly Amount (₹) *</label><input id="minMonthly" type="number" min="0.01" step="0.01"></div>
+        <div class="field"><label>Cycle *</label><input id="cycle" placeholder="Cycle"></div>
+        <div class="field full"><label>Payment Date *</label><input id="paymentDate" type="date"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="saveRecord()">Save Entry</button>
+        <button class="secondary" onclick="resetForm()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Offer Summary</h2>
+      <div class="results">
+        <div class="metric"><span>Offer Type</span><strong id="offerType">—</strong></div>
+        <div class="metric"><span>Offer Amount</span><strong id="offerAmount">—</strong></div>
+        <div class="metric"><span>Total EMIs</span><strong id="totalEmis">—</strong></div>
+        <div class="metric"><span>EMI Amount</span><strong id="emiAmount">—</strong></div>
+        <div class="metric"><span>Down Payment</span><strong id="downPayment">—</strong></div>
+        <div class="metric"><span>Balance</span><strong id="balance">—</strong></div>
+        <div class="metric"><span>Remaining Instalments</span><strong id="remaining">—</strong></div>
+        <div class="metric"><span>Recovery Percentage</span><strong id="recoveryDisplay">—</strong></div>
+      </div>
+      <div class="offer">
+        <p id="customerMessage">—</p>
+        <div class="actions"><button class="secondary" onclick="copyCustomerMessage()">Copy Message</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- SAVED ENTRIES -->
+<section id="recordsView" class="view">
+  <div class="head">
+    <h2>Saved Entries</h2>
+    <button class="danger" onclick="clearAll()">Clear All</button>
+  </div>
+  <div class="tabs">
+    <button id="tabIWP" class="tab active" onclick="switchTab('IWP')">IWP</button>
+    <button id="tabSettlement" class="tab" onclick="switchTab('Settlement')">Settlement</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>CM 11</th><th>Customer Name</th><th>Curr Balance</th>
+        <th>Down payment</th><th>Balance</th><th>Instalment</th>
+        <th>EMI AMOUNT</th><th>CYCLE</th><th>PAYMENT DATE</th><th>Action</th>
+      </tr></thead>
+      <tbody id="recordsBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- WHATSAPP TEMPLATES -->
+<section id="templatesView" class="view">
+  <div class="card">
+    <h2>WhatsApp Templates</h2>
+    <div class="template-layout">
+      <div>
+        <div class="small-note">Suggested order. Choose a message according to the customer's payment status and account situation.</div>
+        <div class="template-list" id="templateList" style="margin-top:14px"></div>
+      </div>
+      <div>
+        <div class="fields">
+          <div class="field full">
+            <label for="waMobile">Customer Mobile Number *</label>
+            <input id="waMobile" type="tel" inputmode="numeric" placeholder="10-digit number or country code">
+          </div>
+          <div class="field">
+            <label for="waAmount">Amount (₹), if required</label>
+            <input id="waAmount" type="number" min="0" step="0.01" placeholder="Enter amount">
+          </div>
+          <div class="field">
+            <label for="waCustomerName">Customer Name, if required</label>
+            <input id="waCustomerName" placeholder="Customer name">
+          </div>
+        </div>
+        <div class="field" style="margin-top:15px">
+          <label for="waPreview">Message Preview</label>
+          <textarea id="waPreview" class="preview" readonly placeholder="Select a template"></textarea>
+        </div>
+        <div class="actions">
+          <button class="primary" onclick="openWhatsApp()">Open WhatsApp Web</button>
+          <button class="secondary" onclick="copyWhatsAppMessage()">Copy Message</button>
+        </div>
+        <p class="small-note">WhatsApp Web will open in a new tab with the selected message prefilled. Review the message before sending. The website does not send messages automatically.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card template-manage">
+    <h2>Manage Templates</h2>
+    <div class="fields">
+      <div class="field">
+        <label for="newTemplateTitle">Template Name *</label>
+        <input id="newTemplateTitle" placeholder="e.g. Payment follow-up">
+      </div>
+      <div class="field">
+        <label for="newTemplateCategory">Category</label>
+        <input id="newTemplateCategory" placeholder="e.g. Follow-up">
+      </div>
+      <div class="field full">
+        <label for="newTemplateBody">Template Message *</label>
+        <textarea id="newTemplateBody" rows="5" placeholder="Write your message. Use {{amount}} for an amount and {{name}} for customer name."></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="saveTemplateBtn" onclick="saveCustomTemplate()">Add Template</button>
+      <button class="secondary" onclick="clearTemplateForm()">Clear</button>
+    </div>
+    <div class="small-note" style="margin-top:12px">You can add, edit, and delete custom templates. Changes are saved in this browser.</div>
+  </div>
+</section>
+</main>
+</div>
+
+<script>
+/* =========================
+   GENERAL NAVIGATION
+========================= */
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+function toggleMobileMenu(force){
+  const sb=document.getElementById("sidebar");
+  const overlay=document.getElementById("overlay");
+  const open=typeof force==="boolean"?force:!sb.classList.contains("mobile-open");
+  sb.classList.toggle("mobile-open",open);
+  overlay.classList.toggle("show",open);
+}
+
+function openView(view){
+  ["calculator","records","templates"].forEach(v=>{
+    document.getElementById(v+"View").classList.toggle("active",v===view);
+    const nav=document.getElementById("nav"+v.charAt(0).toUpperCase()+v.slice(1));
+    if(nav)nav.classList.toggle("active",v===view);
+  });
+
+  const titles={calculator:"EMI Conversion & Settlement",records:"Saved Entries",templates:"WhatsApp Templates"};
+  document.getElementById("pageTitle").textContent=titles[view];
+  if(view==="records")renderRecords();
+  if(view==="templates")renderTemplateList();
+  if(window.innerWidth<=700)toggleMobileMenu(false);
+}
+
+function futureTool(){
+  alert("Add a new tool by creating its page and adding a navigation item in the sidebar.");
+}
+
+/* =========================
+   EMI CALCULATOR
+========================= */
+const EXCEL_HEADERS=[
+  "CM 11","Customer Name","Curr Balance","Down payment",
+  "Balance","Instalment","EMI AMOUNT","CYCLE","PAYMENT DATE"
+];
+
+const STORAGE_KEY="collectionToolsRecords_v6";
+let records=loadRecords();
+let activeTab="IWP";
+let pendingExport=false;
+
+function loadRecords(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+    pendingExport=Boolean(d.pendingExport);
+    return {IWP:Array.isArray(d.IWP)?d.IWP:[],Settlement:Array.isArray(d.Settlement)?d.Settlement:[]};
+  }catch(e){return {IWP:[],Settlement:[]};}
+}
+
+function persistRecords(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify({
+    IWP:records.IWP,Settlement:records.Settlement,pendingExport
+  }));
+  updateExportButton();
+}
+
+function updateExportButton(){
+  document.getElementById("exportBtn").disabled=!pendingExport;
+}
+
+function val(id){return document.getElementById(id).value.trim();}
+function num(id){return Number(document.getElementById(id).value);}
+
+function money(v){
+  return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+
+function dateFormat(v){
+  if(!v)return "";
+  const p=v.split("-");
+  return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:v;
+}
+
+function getOffer(){
+  const cm=val("cm11"),name=val("customerName"),cycle=val("cycle"),date=val("paymentDate");
+  const statement=num("statementBalance"),recovery=num("recovery"),min=num("minMonthly");
+
+  if(!cm||!name||!cycle||!date||
+    document.getElementById("statementBalance").value===""||
+    document.getElementById("recovery").value===""||
+    document.getElementById("minMonthly").value===""){
+    return {error:"Please fill all mandatory fields."};
+  }
+
+  if(!Number.isFinite(statement)||statement<=0||!Number.isFinite(min)||min<=0||
+    !Number.isFinite(recovery)||recovery<0||recovery>100){
+    return {error:"Enter valid amounts and recovery percentage between 0 and 100."};
+  }
+
+  const type=recovery===0?"IWP":"Settlement";
+  const offer=type==="IWP"?statement:statement*recovery/100;
+  let total=0;
+
+  for(let n=1;n<=24;n++){
+    if(offer/n>=min)total=n;else break;
+  }
+
+  if(total===0)return {error:"No eligible EMI is available for the minimum monthly amount."};
+
+  const emi=offer/total,down=emi,balance=Math.max(0,offer-down);
+  return {type,cm,name,cycle,date,statement,recovery,offer,total,emi,down,balance,instalments:total-1};
+}
+
+function updateSummary(){
+  const c=getOffer();
+  const ids=["offerType","offerAmount","totalEmis","emiAmount","downPayment","balance","remaining","recoveryDisplay"];
+
+  if(c.error){
+    ids.forEach(id=>document.getElementById(id).textContent="—");
+    document.getElementById("customerMessage").textContent="—";
+    return;
+  }
+
+  document.getElementById("offerType").textContent=c.type;
+  document.getElementById("offerAmount").textContent=money(c.offer);
+  document.getElementById("totalEmis").textContent=c.total;
+  document.getElementById("emiAmount").textContent=money(c.emi);
+  document.getElementById("downPayment").textContent=money(c.down);
+  document.getElementById("balance").textContent=money(c.balance);
+  document.getElementById("remaining").textContent=c.instalments;
+  document.getElementById("recoveryDisplay").textContent=c.recovery+"%";
+
+  document.getElementById("customerMessage").textContent=c.type==="IWP"
+    ?`As per the statement balance ${money(c.statement)}, your payment can be converted into ${c.total} EMIs of ${money(c.emi)} each.`
+    :`Settlement Amount ${money(c.offer)}, your payment can be converted into ${c.total} EMIs of ${money(c.emi)} each.`;
+}
+
+function saveRecord(){
+  const c=getOffer();
+  if(c.error){alert(c.error);return;}
+
+  const duplicate=records[c.type].some(r=>String(r["CM 11"]).trim().toLowerCase()===c.cm.toLowerCase());
+  if(duplicate){alert("Duplicate entry. This CM 11 already exists in "+c.type+".");return;}
+
+  const row={
+    "CM 11":c.cm,"Customer Name":c.name,"Curr Balance":c.statement,
+    "Down payment":c.down,"Balance":c.balance,"Instalment":c.instalments,
+    "EMI AMOUNT":c.emi,"CYCLE":c.cycle,"PAYMENT DATE":dateFormat(c.date)
+  };
+
+  records[c.type].push(row);
+  pendingExport=true;
+  persistRecords();
+  renderRecords();
+  alert("Entry saved in "+c.type+". Export Excel is now enabled.");
+}
+
+function renderRecords(){
+  const body=document.getElementById("recordsBody");
+  body.innerHTML="";
+  const list=records[activeTab];
+
+  if(!list.length){
+    const tr=document.createElement("tr"),td=document.createElement("td");
+    td.colSpan=10;td.className="empty";td.textContent="No entries";
+    tr.appendChild(td);body.appendChild(tr);return;
+  }
+
+  list.forEach((r,index)=>{
+    const tr=document.createElement("tr");
+    EXCEL_HEADERS.forEach(h=>{
+      const td=document.createElement("td"),v=r[h]??"";
+      td.textContent=["Curr Balance","Down payment","Balance","EMI AMOUNT"].includes(h)?money(v):v;
+      tr.appendChild(td);
+    });
+
+    const action=document.createElement("td");
+    const del=document.createElement("button");
+    del.className="danger";del.textContent="Delete";
+    del.onclick=()=>deleteRecord(index);
+    action.appendChild(del);tr.appendChild(action);body.appendChild(tr);
+  });
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById("tabIWP").classList.toggle("active",tab==="IWP");
+  document.getElementById("tabSettlement").classList.toggle("active",tab==="Settlement");
+  renderRecords();
+}
+
+function deleteRecord(index){
+  if(!confirm("Delete this entry?"))return;
+  records[activeTab].splice(index,1);
+  persistRecords();renderRecords();
+}
+
+function clearAll(){
+  if(!confirm("Delete all saved entries?"))return;
+  records={IWP:[],Settlement:[]};pendingExport=false;
+  persistRecords();renderRecords();
+}
+
+async function exportExcel(){
+  if(!pendingExport){alert("Add a new entry before exporting.");return;}
+  if(typeof ExcelJS==="undefined"){alert("Excel library could not load. Check your internet connection.");return;}
+
+  const workbook=new ExcelJS.Workbook();
+
+  for(const sheetName of ["IWP","Settlement"]){
+    const ws=workbook.addWorksheet(sheetName);
+    ws.addRow(EXCEL_HEADERS);
+    records[sheetName].forEach(r=>ws.addRow(EXCEL_HEADERS.map(h=>r[h]??"")));
+
+    ws.columns=[
+      {width:17},{width:27},{width:19},{width:17},{width:17},
+      {width:15},{width:17},{width:12},{width:18}
+    ];
+
+    const header=ws.getRow(1);header.height=48;
+    header.eachCell(cell=>{
+      cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF1766DF"}};
+      cell.font={bold:true,color:{argb:"FF061A40"},size:12};
+      cell.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+      cell.border={top:{style:"thin",color:{argb:"FF293D5C"}},bottom:{style:"thin",color:{argb:"FF293D5C"}},left:{style:"thin",color:{argb:"FF293D5C"}},right:{style:"thin",color:{argb:"FF293D5C"}}};
+    });
+
+    for(let row=2;row<=ws.rowCount;row++){
+      const current=ws.getRow(row);current.height=25;
+      current.eachCell(cell=>{
+        cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFE5EFFF"}};
+        cell.alignment={horizontal:"center",vertical:"middle",wrapText:true};
+        cell.border={top:{style:"thin",color:{argb:"FF293D5C"}},bottom:{style:"thin",color:{argb:"FF293D5C"}},left:{style:"thin",color:{argb:"FF293D5C"}},right:{style:"thin",color:{argb:"FF293D5C"}}};
+      });
+      [3,4,5,7].forEach(col=>current.getCell(col).numFmt='#,##,##0.00');
+      current.getCell(9).numFmt='dd-mm-yyyy';
+    }
+
+    ws.views=[{state:"frozen",ySplit:1}];
+    ws.autoFilter={from:{row:1,column:1},to:{row:1,column:EXCEL_HEADERS.length}};
+  }
+
+  try{
+    const buffer=await workbook.xlsx.writeBuffer();
+    const blob=new Blob([buffer],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="IWP_Settlement_Records.xlsx";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    pendingExport=false;persistRecords();
+  }catch(e){alert("Excel export failed. Please try again.");}
+}
+
+async function copyCustomerMessage(){
+  const text=document.getElementById("customerMessage").textContent;
+  if(!text||text==="—"){alert("Complete the required fields first.");return;}
+  await copyText(text);
+}
+
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);alert("Copied successfully.");}
+  catch(e){
+    const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();
+    try{document.execCommand("copy");alert("Copied successfully.");}
+    catch(err){alert("Please copy the text manually.");}
+    t.remove();
+  }
+}
+
+function resetForm(){
+  ["cm11","customerName","statementBalance","recovery","minMonthly","cycle","paymentDate"].forEach(id=>document.getElementById(id).value="");
+  updateSummary();
+}
+
+["cm11","customerName","statementBalance","recovery","minMonthly","cycle","paymentDate"].forEach(id=>document.getElementById(id).addEventListener("input",updateSummary));
+
+/* =========================
+   WHATSAPP TEMPLATE LIBRARY
+========================= */
+const TEMPLATE_KEY="collectionWhatsAppTemplates_v1";
+
+const DEFAULT_TEMPLATES=[
+  {id:"t1",title:"Initial Contact",category:"1 · First contact",body:"Hi, we have been trying to contact you regarding your American Express account. Please let us know the payment status"},
+  {id:"t2",title:"Payment Status Follow-up",category:"2 · Follow-up",body:"Good afternoon,\n\nCan you please confirm the payment status? Have you made the payment?\n\nIf not paid, it might impact your credit bureau and also it may go to a higher delinquency.\n\nIf paid, please share the payment details."},
+  {id:"t3",title:"Gentle Reminder",category:"3 · Follow-up",body:"Sorry to bother you again and again, but if it is not possible for you to make the payment, please let me know. I can update the same to the banker, and they can follow up with the further procedure."},
+  {id:"t4",title:"Statement Date Reminder",category:"4 · Due date",body:"Good morning,\n\nTODAY is your statement date and the last day to pay the overdue amount. If not paid, it might impact your credit bureau and may lead to higher delinquency.\n\nCan you please confirm the payment status? Have you made the payment?"},
+  {id:"t5",title:"Bare Minimum Request",category:"5 · Payment request",body:"We request you to at least pay the bare minimum amount of ₹{{amount}} to avoid further CIBIL impact, higher delinquency and visit follow-ups."},
+  {id:"t6",title:"Card Cancellation Reminder",category:"6 · Account status",body:"Dear Sir/Madam,\n\nDue to the non-payment of your outstanding dues, your credit card may be permanently cancelled. Please note that once the card is cancelled, it cannot be reactivated, even if you are willing to clear the full outstanding balance later.\n\nWe kindly request you to pay at least the minimum amount before the statement date to avoid permanent card cancellation."},
+  {id:"t7",title:"Recovery Follow-up",category:"7 · Further follow-up",body:"Hi, this is a gentle reminder regarding your pending Amex credit card payment. Please clear the payment today to avoid account escalation to recovery and a possible adverse impact on your CIBIL report."},
+  {id:"t8",title:"EMI Conversion Offer",category:"8 · Payment solution",body:"Hi Sir, your card is eligible for EMI conversion.\n\nIf you opt for the EMI plan, the applicable interest and charges will be frozen from the previous statement date up to the date of EMI enrollment, and the eligible outstanding amount will be converted into EMIs.\n\nPlease let me know if you would like me to share the available EMI options."}
+];
+
+let templates=loadTemplates();
+let selectedTemplateId=templates[0]?.id||null;
+let editingTemplateId=null;
+
+function loadTemplates(){
+  try{
+    const data=JSON.parse(localStorage.getItem(TEMPLATE_KEY)||"null");
+    return Array.isArray(data)?data:DEFAULT_TEMPLATES.map(t=>({...t}));
+  }catch(e){
+    return DEFAULT_TEMPLATES.map(t=>({...t}));
+  }
+}
+
+function saveTemplates(){
+  localStorage.setItem(TEMPLATE_KEY,JSON.stringify(templates));
+}
+
+function selectedTemplate(){
+  return templates.find(t=>t.id===selectedTemplateId)||null;
+}
+
+function renderTemplateList(){
+  const list=document.getElementById("templateList");
+  list.innerHTML="";
+
+  templates.forEach((t,index)=>{
+    const btn=document.createElement("button");
+    btn.className="template-item"+(t.id===selectedTemplateId?" selected":"");
+
+    const number=document.createElement("span");
+    number.className="template-number";
+    number.textContent=index+1;
+
+    const info=document.createElement("span");
+    info.className="template-title";
+
+    const title=document.createElement("span");
+    title.textContent=t.title;
+
+    const category=document.createElement("span");
+    category.className="template-category";
+    category.textContent=t.category||"Custom template";
+
+    info.append(title,category);
+    btn.append(number,info);
+    btn.onclick=()=>selectTemplate(t.id);
+    list.appendChild(btn);
+  });
+
+  if(!templates.length){
+    const p=document.createElement("p");
+    p.className="small-note";
+    p.textContent="No templates added.";
+    list.appendChild(p);
+  }
+
+  updatePreview();
+}
+
+function selectTemplate(id){
+  selectedTemplateId=id;
+  renderTemplateList();
+}
+
+function renderPreview(){
+  const t=selectedTemplate();
+  if(!t)return "";
+
+  let text=t.body;
+  const amount=document.getElementById("waAmount").value.trim();
+  const name=document.getElementById("waCustomerName").value.trim();
+
+  text=text.replace(/\{\{amount\}\}/g,amount?money(amount):"[Enter amount]");
+  text=text.replace(/\{\{name\}\}/g,name||"[Customer name]");
+
+  return text;
+}
+
+function updatePreview(){
+  document.getElementById("waPreview").value=renderPreview();
+}
+
+["waAmount","waCustomerName"].forEach(id=>
+  document.getElementById(id).addEventListener("input",updatePreview)
+);
+
+function normalizedPhone(){
+  let phone=document.getElementById("waMobile").value.replace(/\D/g,"");
+  if(phone.length===10)phone="91"+phone;
+  if(phone.length<11||phone.length>15)return null;
+  return phone;
+}
+
+function openWhatsApp(){
+  const phone=normalizedPhone();
+
+  if(!phone){
+    alert("Enter a valid mobile number with country code, or a 10-digit Indian number.");
+    return;
+  }
+
+  const t=selectedTemplate();
+  if(!t){
+    alert("Select a template first.");
+    return;
+  }
+
+  if(t.body.includes("{{amount}}")&&!document.getElementById("waAmount").value.trim()){
+    alert("Please enter the amount required for this template.");
+    return;
+  }
+
+  const message=renderPreview();
+  const url="https://web.whatsapp.com/send?phone="+encodeURIComponent(phone)+"&text="+encodeURIComponent(message);
+  window.open(url,"_blank","noopener");
+}
+
+function copyWhatsAppMessage(){
+  const t=selectedTemplate();
+
+  if(!t){
+    alert("Select a template first.");
+    return;
+  }
+
+  if(t.body.includes("{{amount}}")&&!document.getElementById("waAmount").value.trim()){
+    alert("Please enter the amount required for this template.");
+    return;
+  }
+
+  copyText(renderPreview());
+}
+
+function saveCustomTemplate(){
+  const title=document.getElementById("newTemplateTitle").value.trim();
+  const category=document.getElementById("newTemplateCategory").value.trim()||"Custom";
+  const body=document.getElementById("newTemplateBody").value.trim();
+
+  if(!title||!body){
+    alert("Template name and message are mandatory.");
+    return;
+  }
+
+  if(editingTemplateId){
+    const t=templates.find(x=>x.id===editingTemplateId);
+    if(t){
+      t.title=title;
+      t.category=category;
+      t.body=body;
+    }
+    selectedTemplateId=editingTemplateId;
+  }else{
+    const id="custom_"+Date.now();
+    templates.push({id,title,category,body});
+    selectedTemplateId=id;
+  }
+
+  saveTemplates();
+  clearTemplateForm();
+  renderTemplateList();
+}
+
+function editSelectedTemplate(){
+  const t=selectedTemplate();
+
+  if(!t){
+    alert("Select a template first.");
+    return;
+  }
+
+  editingTemplateId=t.id;
+  document.getElementById("newTemplateTitle").value=t.title;
+  document.getElementById("newTemplateCategory").value=t.category||"";
+  document.getElementById("newTemplateBody").value=t.body;
+  document.getElementById("saveTemplateBtn").textContent="Update Template";
+  document.getElementById("newTemplateTitle").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function deleteSelectedTemplate(){
+  const t=selectedTemplate();
+
+  if(!t){
+    alert("Select a template first.");
+    return;
+  }
+
+  if(!confirm("Delete this template?"))return;
+
+  templates=templates.filter(x=>x.id!==t.id);
+  selectedTemplateId=templates[0]?.id||null;
+  saveTemplates();
+  clearTemplateForm();
+  renderTemplateList();
+}
+
+function clearTemplateForm(){
+  editingTemplateId=null;
+  document.getElementById("newTemplateTitle").value="";
+  document.getElementById("newTemplateCategory").value="";
+  document.getElementById("newTemplateBody").value="";
+  document.getElementById("saveTemplateBtn").textContent="Add Template";
+}
+</script>
+
+<script>
+/* Add template management buttons beside the template editor */
+(function(){
+  const area=document.querySelector(".template-manage .actions");
+
+  const edit=document.createElement("button");
+  edit.className="secondary";
+  edit.textContent="Edit Selected";
+  edit.onclick=editSelectedTemplate;
+
+  const del=document.createElement("button");
+  del.className="danger";
+  del.textContent="Delete Selected";
+  del.onclick=deleteSelectedTemplate;
+
+  area.append(edit,del);
+})();
+
+updateSummary();
+renderRecords();
+updateExportButton();
+renderTemplateList();
+</script>
+</body>
+</html>
